@@ -10,9 +10,9 @@ AWK="/usr/bin/awk"
 #Useragent used for curl requests
 USERAGENT="Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.116 Safari/537.36"
 #List of headers to watch for seperated by \|
-HEADERSTOWATCH="cache\|expires\|CF-"
+HEADERSTOWATCH='cache\|expires\|CF-'
 #List of headers to ignore seperated by \|
-HEADERSTOIGNORE="cookie\|<"
+HEADERSTOIGNORE='cookie\|<'
 
 #test if arguments passed
 if [ -z "$1" ]; then
@@ -34,11 +34,11 @@ printf "\n"
 
 #Make request for resource via DNS and report back CloudFlare headers, then grep headers interested in
 printf "CloudFlare Headers:\n"
-$CURL -s -I -X Get  -H "User-Agent: $USERAGENT" --url $URL |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
+$CURL -v -s -I -X GET  -H "User-Agent: $USERAGENT" --url $URL 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
 
 #Make request for resrouce by IP and pass Host header, then grep headers interested in
 printf "Origin Cache Headers:\n"
-$CURL -s -I -X Get -H "Host: $URL" -H "User-Agent: $USERAGENT" --url $ORIGINIP |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
+$CURL -v -s -I -X GET -H "Host: $URL" -H "User-Agent: $USERAGENT" --url $ORIGINIP 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
 printf "\n"
 
 #Make request for resource via DNS and store metrics
