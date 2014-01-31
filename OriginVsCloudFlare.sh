@@ -25,9 +25,24 @@ else
 	ORIGINIP=$2
 fi
 
-DOMAINNAME=`echo $URL | awk -F/ '{print $3}'`
+#Check for full URI, if found parse out only FQDN - e.g. strip http:// and any path 
+if `echo $URL | grep -qi "http://\|https://"`; then
+ 	DOMAINNAME=`echo $URL | awk -F/ '{print $3}'`
+ 	PATH_AND_FILE=/`echo $URL | cut -d/ -f4-`
+else
+	DOMAINNAME=$URL
+fi
 
-printf "Domain name is $DOMAINNAME"
+
+#check for https 
+if `echo $URL | grep -qi "https://"`; then
+ 	PROTO="https://"
+else
+	PROTO="http://"
+fi
+
+printf "Domain name is $DOMAINNAME \n"
+printf "Path and file are: $PATH_AND_FILE \n"
 
 #Print IP request is originating from
 printf "\n"
@@ -37,11 +52,11 @@ printf "\n"
 
 #Make request for resource via DNS and report back CloudFlare headers, then grep headers interested in
 printf "CloudFlare Headers:\n"
-$CURL -v -s -I -X GET  -H "User-Agent: $USERAGENT" --url $URL 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
+$CURL -k -v -s -I -X GET  -H "User-Agent: $USERAGENT" --url $URL 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
 
 #Make request for resrouce by IP and pass Host header, then grep headers interested in
 printf "Origin Cache Headers:\n"
-$CURL -v -s -I -X GET -H "Host: $DOMAINNAME" -H "User-Agent: $USERAGENT" --url $ORIGINIP 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
+$CURL -k -v -s -I -X GET -H "Host: $DOMAINNAME" -H "User-Agent: $USERAGENT" --url $PROTO$ORIGINIP$PATH_AND_FILE 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
 printf "\n"
 
 #Make request for resource via DNS and store metrics
