@@ -25,6 +25,9 @@ else
 	ORIGINIP=$2
 fi
 
+DOMAINNAME=`echo $URL | awk -F/ '{print $3}'`
+
+printf "Domain name is $DOMAINNAME"
 
 #Print IP request is originating from
 printf "\n"
@@ -38,7 +41,7 @@ $CURL -v -s -I -X GET  -H "User-Agent: $USERAGENT" --url $URL 2>&1 |grep -ai $HE
 
 #Make request for resrouce by IP and pass Host header, then grep headers interested in
 printf "Origin Cache Headers:\n"
-$CURL -v -s -I -X GET -H "Host: $URL" -H "User-Agent: $USERAGENT" --url $ORIGINIP 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
+$CURL -v -s -I -X GET -H "Host: $DOMAINNAME" -H "User-Agent: $USERAGENT" --url $ORIGINIP 2>&1 |grep -ai $HEADERSTOWATCH |grep -aiv $HEADERSTOIGNORE
 printf "\n"
 
 #Make request for resource via DNS and store metrics
